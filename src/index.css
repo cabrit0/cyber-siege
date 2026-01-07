@@ -1,0 +1,456 @@
+/* === CYBER SIEGE - CUSTOM STYLES === */
+
+/* Font Import - MUST be first */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap');
+
+/* Tailwind */
+@import "tailwindcss";
+
+:root {
+    --cyber-green: #22c55e;
+    --cyber-blue: #0ea5e9;
+    --cyber-red: #ef4444;
+    --cyber-purple: #a855f7;
+    --cyber-yellow: #eab308;
+    --cyber-pink: #ec4899;
+    --neon-glow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor;
+}
+
+body {
+    font-family: 'Share Tech Mono', monospace;
+    background: #0a0a0f;
+    overflow-x: hidden;
+}
+
+/* === ANIMATIONS === */
+
+/* Glitch Effect */
+@keyframes glitch {
+
+    0%,
+    100% {
+        transform: translate(0);
+    }
+
+    20% {
+        transform: translate(-2px, 2px);
+    }
+
+    40% {
+        transform: translate(-2px, -2px);
+    }
+
+    60% {
+        transform: translate(2px, 2px);
+    }
+
+    80% {
+        transform: translate(2px, -2px);
+    }
+}
+
+@keyframes glitch-skew {
+
+    0%,
+    100% {
+        transform: skew(0deg);
+    }
+
+    20% {
+        transform: skew(-2deg);
+    }
+
+    40% {
+        transform: skew(2deg);
+    }
+
+    60% {
+        transform: skew(-1deg);
+    }
+
+    80% {
+        transform: skew(1deg);
+    }
+}
+
+.glitch {
+    animation: glitch 0.3s ease-in-out infinite;
+}
+
+.glitch-text {
+    position: relative;
+}
+
+.glitch-text::before,
+.glitch-text::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch-text::before {
+    animation: glitch-skew 1s infinite linear alternate-reverse;
+    clip-path: polygon(0 0, 100% 0, 100% 45%, 0 45%);
+    transform: translateX(-2px);
+    color: #0ff;
+}
+
+.glitch-text::after {
+    animation: glitch-skew 0.5s infinite linear alternate-reverse;
+    clip-path: polygon(0 55%, 100% 55%, 100% 100%, 0 100%);
+    transform: translateX(2px);
+    color: #f0f;
+}
+
+/* Neon Pulse */
+@keyframes neon-pulse {
+
+    0%,
+    100% {
+        text-shadow: 0 0 5px currentColor, 0 0 10px currentColor, 0 0 20px currentColor;
+        opacity: 1;
+    }
+
+    50% {
+        text-shadow: 0 0 10px currentColor, 0 0 20px currentColor, 0 0 40px currentColor, 0 0 80px currentColor;
+        opacity: 0.9;
+    }
+}
+
+.neon-text {
+    animation: neon-pulse 2s ease-in-out infinite;
+}
+
+/* Scan Line */
+@keyframes scanline {
+    0% {
+        transform: translateY(-100%);
+    }
+
+    100% {
+        transform: translateY(100vh);
+    }
+}
+
+.scanline::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to bottom, transparent, rgba(34, 197, 94, 0.3), transparent);
+    animation: scanline 3s linear infinite;
+    pointer-events: none;
+    z-index: 100;
+}
+
+/* Matrix Rain Background */
+@keyframes matrix-fall {
+    0% {
+        transform: translateY(-100%);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(100vh);
+        opacity: 0;
+    }
+}
+
+/* Cyber Grid Background */
+.cyber-grid {
+    background-image:
+        linear-gradient(rgba(34, 197, 94, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 197, 94, 0.03) 1px, transparent 1px);
+    background-size: 50px 50px;
+}
+
+/* Danger Flash */
+@keyframes danger-flash {
+
+    0%,
+    100% {
+        background-color: rgba(239, 68, 68, 0);
+    }
+
+    50% {
+        background-color: rgba(239, 68, 68, 0.15);
+    }
+}
+
+.danger-flash {
+    animation: danger-flash 0.5s ease-in-out infinite;
+}
+
+/* Success Burst */
+@keyframes success-burst {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.2);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.success-burst {
+    animation: success-burst 0.5s ease-out;
+}
+
+/* Float Animation */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.float {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Typing Effect */
+@keyframes typing {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: 100%;
+    }
+}
+
+@keyframes blink-caret {
+
+    from,
+    to {
+        border-color: transparent;
+    }
+
+    50% {
+        border-color: #22c55e;
+    }
+}
+
+.typing-effect {
+    overflow: hidden;
+    white-space: nowrap;
+    border-right: 3px solid #22c55e;
+    animation: typing 2s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+/* Shake */
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-5px);
+    }
+
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(5px);
+    }
+}
+
+.shake {
+    animation: shake 0.5s ease-in-out;
+}
+
+/* Rotate Icon */
+@keyframes spin-slow {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spin-slow {
+    animation: spin-slow 8s linear infinite;
+}
+
+/* Progress Bar Glow */
+@keyframes progress-glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px var(--cyber-blue);
+    }
+
+    50% {
+        box-shadow: 0 0 20px var(--cyber-blue), 0 0 30px var(--cyber-blue);
+    }
+}
+
+.progress-glow {
+    animation: progress-glow 1s ease-in-out infinite;
+}
+
+/* Score Pop */
+@keyframes score-pop {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    50% {
+        transform: scale(1.3);
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.score-pop {
+    animation: score-pop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Cyber Button Hover */
+.cyber-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.cyber-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.cyber-btn:hover::before {
+    left: 100%;
+}
+
+/* Card Hover Effect */
+.cyber-card {
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.cyber-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 2px;
+    background: linear-gradient(45deg, var(--cyber-green), var(--cyber-blue), var(--cyber-purple));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.cyber-card:hover::before {
+    opacity: 1;
+}
+
+/* Terminal Window */
+.terminal-window {
+    background: linear-gradient(180deg, #1a1a2e 0%, #0a0a0f 100%);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.1), inset 0 0 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Score Display */
+.score-display {
+    font-family: 'Orbitron', sans-serif;
+    text-shadow: 0 0 10px currentColor;
+}
+
+/* Victory Particles */
+@keyframes particle-rise {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(-100px) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Countdown Number */
+@keyframes countdown-pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.countdown-pulse {
+    animation: countdown-pulse 1s ease-in-out infinite;
+}
+
+/* Critical Timer */
+@keyframes critical-shake {
+
+    0%,
+    100% {
+        transform: translateX(0) scale(1);
+    }
+
+    25% {
+        transform: translateX(-3px) scale(1.02);
+    }
+
+    75% {
+        transform: translateX(3px) scale(1.02);
+    }
+}
+
+.critical-timer {
+    animation: critical-shake 0.3s ease-in-out infinite;
+    color: #ef4444;
+}
+
+/* Orbitron Font Class */
+.font-orbitron {
+    font-family: 'Orbitron', sans-serif;
+}

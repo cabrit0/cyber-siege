@@ -1,0 +1,664 @@
+{
+    "temas": [
+        {
+            "id": "tailgating",
+            "titulo": "Tailgating (Entrada Não Autorizada)",
+            "cenario": "Um desconhecido aproveita a porta aberta por um funcionário para entrar no edifício sem identificação.",
+            "ferramentas_ataque": [
+                {
+                    "id": "engenharia_social",
+                    "nome": "Engenharia Social",
+                    "correta": true
+                },
+                {
+                    "id": "disfarce",
+                    "nome": "Disfarce de Funcionário",
+                    "correta": false
+                },
+                {
+                    "id": "pressa",
+                    "nome": "Aproveitar Pressa dos Funcionários",
+                    "correta": false
+                },
+                {
+                    "id": "fingir_entrega",
+                    "nome": "Fingir Entrega de Encomenda",
+                    "correta": false
+                },
+                {
+                    "id": "seguir_grupo",
+                    "nome": "Entrar Misturado num Grupo",
+                    "correta": false
+                }
+            ],
+            "ferramentas_defesa": [
+                {
+                    "id": "cartao_acesso",
+                    "nome": "Verificar Cartão de Acesso",
+                    "correta": true
+                },
+                {
+                    "id": "formacao",
+                    "nome": "Formação de Segurança",
+                    "correta": false
+                },
+                {
+                    "id": "porta_automatica",
+                    "nome": "Portas com Fecho Automático",
+                    "correta": false
+                },
+                {
+                    "id": "alerta_seg",
+                    "nome": "Alertar Segurança",
+                    "correta": false
+                },
+                {
+                    "id": "politica_acesso",
+                    "nome": "Política de Acompanhamento",
+                    "correta": false
+                }
+            ],
+            "tempo": 10
+        },
+        {
+            "id": "phishing",
+            "titulo": "Phishing",
+            "cenario": "A empresa recebeu um e-mail urgente das Finanças com um link.",
+            "ferramentas_ataque": [
+                {
+                    "id": "link_falso",
+                    "nome": "URL Camuflado",
+                    "correta": true
+                },
+                {
+                    "id": "spoof_email",
+                    "nome": "Email Falsificado",
+                    "correta": false
+                },
+                {
+                    "id": "anexo_malicioso",
+                    "nome": "Anexo Malicioso",
+                    "correta": false
+                },
+                {
+                    "id": "urgencia_falsa",
+                    "nome": "Mensagem de Urgência",
+                    "correta": false
+                },
+                {
+                    "id": "logo_falso",
+                    "nome": "Imitação de Logótipo Oficial",
+                    "correta": false
+                }
+            ],
+            "ferramentas_defesa": [
+                {
+                    "id": "check_url",
+                    "nome": "Inspecionar Link",
+                    "correta": true
+                },
+                {
+                    "id": "reportar",
+                    "nome": "Reportar ao TI",
+                    "correta": false
+                },
+                {
+                    "id": "hover",
+                    "nome": "Passar Rato Sobre o Link",
+                    "correta": false
+                },
+                {
+                    "id": "verificar_remetente",
+                    "nome": "Confirmar Remetente",
+                    "correta": false
+                },
+                {
+                    "id": "bloquear_email",
+                    "nome": "Bloquear Remetente",
+                    "correta": false
+                }
+            ],
+            "tempo": 15
+        },
+        {
+            "id": "hack_rede",
+            "titulo": "Intrusão na Rede",
+            "cenario": "A equipa de TI detetou tráfego suspeito a tentar aceder a servidores internos.",
+            "ferramentas_ataque": [
+                {
+                    "id": "scan_portas",
+                    "nome": "Varredura de Portas",
+                    "correta": true
+                },
+                {
+                    "id": "sniffing",
+                    "nome": "Captura de Pacotes",
+                    "correta": false
+                },
+                {
+                    "id": "explorar_vulnerabilidade",
+                    "nome": "Exploração de Vulnerabilidades",
+                    "correta": false
+                },
+                {
+                    "id": "dns_spoof",
+                    "nome": "Manipulação de DNS",
+                    "correta": false
+                },
+                {
+                    "id": "acesso_credenciais",
+                    "nome": "Uso de Credenciais Vazadas",
+                    "correta": false
+                }
+            ],
+            "ferramentas_defesa": [
+                {
+                    "id": "ids",
+                    "nome": "Sistema de Deteção de Intrusões (IDS)",
+                    "correta": true
+                },
+                {
+                    "id": "segmentacao",
+                    "nome": "Segmentação de Rede",
+                    "correta": false
+                },
+                {
+                    "id": "monitorizacao",
+                    "nome": "Monitorização Contínua",
+                    "correta": false
+                },
+                {
+                    "id": "patching",
+                    "nome": "Atualização de Sistemas",
+                    "correta": false
+                },
+                {
+                    "id": "bloqueio_ip",
+                    "nome": "Bloqueio de IP Suspeito",
+                    "correta": false
+                }
+            ],
+            "tempo": 25
+        },
+        {
+            "id": "roubo_informacao",
+            "titulo": "Roubo de Informação",
+            "cenario": "Um colaborador encontra um USB no parque de estacionamento e liga-o ao computador.",
+            "ferramentas_ataque": [
+                {
+                    "id": "malware_usb",
+                    "nome": "Malware em USB",
+                    "correta": true
+                },
+                {
+                    "id": "keylogger",
+                    "nome": "Keylogger",
+                    "correta": false
+                },
+                {
+                    "id": "spyware",
+                    "nome": "Spyware",
+                    "correta": false
+                },
+                {
+                    "id": "ransomware",
+                    "nome": "Ransomware",
+                    "correta": false
+                },
+                {
+                    "id": "roubo_docs",
+                    "nome": "Extração de Documentos",
+                    "correta": false
+                }
+            ],
+            "ferramentas_defesa": [
+                {
+                    "id": "bloqueio_usb",
+                    "nome": "Bloquear Portas USB",
+                    "correta": true
+                },
+                {
+                    "id": "politica_usb",
+                    "nome": "Política de Uso de USB",
+                    "correta": false
+                },
+                {
+                    "id": "sandbox",
+                    "nome": "Abrir em Ambiente Seguro",
+                    "correta": false
+                },
+                {
+                    "id": "alerta_ti",
+                    "nome": "Alertar TI",
+                    "correta": false
+                },
+                {
+                    "id": "antimalware",
+                    "nome": "Antimalware Atualizado",
+                    "correta": false
+                }
+            ],
+            "tempo": 20
+        },
+        {
+            "id": "clone_cartao",
+            "titulo": "Clonagem de Cartão",
+            "cenario": "Um utilizador fez um pagamento num terminal suspeito e depois surgiram compras que não reconhece.",
+            "ferramentas_ataque": [
+                {
+                    "id": "skimmer",
+                    "nome": "Skimmer Físico",
+                    "correta": true
+                },
+                {
+                    "id": "camera_oculta",
+                    "nome": "Câmara Oculta",
+                    "correta": false
+                },
+                {
+                    "id": "terminal_falso",
+                    "nome": "Terminal Falso",
+                    "correta": false
+                },
+                {
+                    "id": "roubo_dados",
+                    "nome": "Roubo de Dados do Chip",
+                    "correta": false
+                },
+                {
+                    "id": "phishing_cartao",
+                    "nome": "Pedido Falso de Dados",
+                    "correta": false
+                }
+            ],
+            "ferramentas_defesa": [
+                {
+                    "id": "contactless",
+                    "nome": "Usar Pagamentos Contactless",
+                    "correta": true
+                },
+                {
+                    "id": "verificar_terminal",
+                    "nome": "Inspecionar Terminal",
+                    "correta": false
+                },
+                {
+                    "id": "alerta_banco",
+                    "nome": "Alertar Banco",
+                    "correta": false
+                },
+                {
+                    "id": "limite_cartao",
+                    "nome": "Definir Limites de Pagamento",
+                    "correta": false
+                },
+                {
+                    "id": "notificacoes",
+                    "nome": "Ativar Notificações de Movimentos",
+                    "correta": false
+                }
+            ],
+            "tempo": 15
+        },
+        {
+            "id": "deepweb",
+            "titulo": "Deep Web",
+            "cenario": "Um utilizador tenta aceder a fóruns desconhecidos e encontra anúncios suspeitos de serviços ilegais.",
+            "ferramentas_ataque": [
+                {
+                    "id": "mercado_ilegal",
+                    "nome": "Mercados Ilegais",
+                    "correta": true
+                },
+                {
+                    "id": "conteudo_malicioso",
+                    "nome": "Links Maliciosos",
+                    "correta": false
+                },
+                {
+                    "id": "roubo_dados",
+                    "nome": "Roubo de Dados",
+                    "correta": false
+                },
+                {
+                    "id": "enganos",
+                    "nome": "Fraudes e Golpes",
+                    "correta": false
+                },
+                {
+                    "id": "malware",
+                    "nome": "Malware Oculto",
+                    "correta": false
+                }
+            ],
+            "ferramentas_defesa": [
+                {
+                    "id": "educacao",
+                    "nome": "Educação e Consciencialização",
+                    "correta": true
+                },
+                {
+                    "id": "evitar_acesso",
+                    "nome": "Evitar Acesso a Conteúdos Desconhecidos",
+                    "correta": false
+                },
+                {
+                    "id": "antimalware",
+                    "nome": "Antimalware Atualizado",
+                    "correta": false
+                },
+                {
+                    "id": "navegacao_segura",
+                    "nome": "Navegação Segura",
+                    "correta": false
+                },
+                {
+                    "id": "reportar",
+                    "nome": "Reportar ao TI",
+                    "correta": false
+                }
+            ],
+            "tempo": 30
+        },
+        {
+            "id": "carregar_link",
+            "titulo": "Carregar num Link Suspeito",
+            "cenario": "Um utilizador recebe uma mensagem no telemóvel com um link para 'confirmar a entrega'.",
+            "ferramentas_ataque": [
+                {
+                    "id": "smishing",
+                    "nome": "Smishing (Phishing por SMS)",
+                    "correta": true
+                },
+                {
+                    "id": "spoof_sms",
+                    "nome": "SMS Falsificado",
+                    "correta": false
+                },
+                {
+                    "id": "malware_link",
+                    "nome": "Link com Malware",
+                    "correta": false
+                },
+                {
+                    "id": "falsa_entrega",
+                    "nome": "Mensagem de Entrega Falsa",
+                    "correta": false
+                },
+                {
+                    "id": "captura_dados",
+                    "nome": "Formulário Falso",
+                    "correta": false
+                }
+            ],
+            "ferramentas_defesa": [
+                {
+                    "id": "verificar_remetente",
+                    "nome": "Verificar Remetente",
+                    "correta": true
+                },
+                {
+                    "id": "nao_clicar",
+                    "nome": "Não Clicar em Links",
+                    "correta": false
+                },
+                {
+                    "id": "bloquear_numero",
+                    "nome": "Bloquear Número",
+                    "correta": false
+                },
+                {
+                    "id": "reportar_sms",
+                    "nome": "Reportar SMS",
+                    "correta": false
+                },
+                {
+                    "id": "pesquisar",
+                    "nome": "Pesquisar Mensagem Online",
+                    "correta": false
+                }
+            ],
+            "tempo": 10
+        },
+        {
+            "id": "descarregar",
+            "titulo": "Descarregar Ficheiros Desconhecidos",
+            "cenario": "Um funcionário descarrega um ficheiro 'fatura.pdf.exe' sem reparar na extensão.",
+            "ferramentas_ataque": [
+                {
+                    "id": "malware_disfarcado",
+                    "nome": "Malware Disfarçado",
+                    "correta": true
+                },
+                {
+                    "id": "trojan",
+                    "nome": "Trojan",
+                    "correta": false
+                },
+                {
+                    "id": "worm",
+                    "nome": "Worm",
+                    "correta": false
+                },
+                {
+                    "id": "spyware",
+                    "nome": "Spyware",
+                    "correta": false
+                },
+                {
+                    "id": "ransomware",
+                    "nome": "Ransomware",
+                    "correta": false
+                }
+            ],
+            "ferramentas_defesa": [
+                {
+                    "id": "bloqueio_extensoes",
+                    "nome": "Bloquear Extensões Perigosas",
+                    "correta": true
+                },
+                {
+                    "id": "verificar_extensao",
+                    "nome": "Verificar Extensão Real",
+                    "correta": false
+                },
+                {
+                    "id": "sandbox",
+                    "nome": "Abrir em Sandbox",
+                    "correta": false
+                },
+                {
+                    "id": "antivirus",
+                    "nome": "Antivírus Atualizado",
+                    "correta": false
+                },
+                {
+                    "id": "formacao",
+                    "nome": "Formação de Segurança",
+                    "correta": false
+                }
+            ],
+            "tempo": 15
+        },
+        {
+            "id": "controlo_remoto",
+            "titulo": "Controlo Remoto do PC",
+            "cenario": "Um utilizador instalou um jogo pirata e agora o rato mexe-se sozinho.",
+            "ferramentas_ataque": [
+                {
+                    "id": "rat",
+                    "nome": "Cavalo de Troia (RAT)",
+                    "correta": true
+                },
+                {
+                    "id": "keylogger",
+                    "nome": "Keylogger",
+                    "correta": false
+                },
+                {
+                    "id": "backdoor",
+                    "nome": "Backdoor",
+                    "correta": false
+                },
+                {
+                    "id": "spyware",
+                    "nome": "Spyware",
+                    "correta": false
+                },
+                {
+                    "id": "botnet",
+                    "nome": "Botnet",
+                    "correta": false
+                }
+            ],
+            "ferramentas_defesa": [
+                {
+                    "id": "firewall",
+                    "nome": "Ativar Firewall",
+                    "correta": true
+                },
+                {
+                    "id": "remover_software",
+                    "nome": "Remover Software Pirata",
+                    "correta": false
+                },
+                {
+                    "id": "antimalware",
+                    "nome": "Executar Antimalware",
+                    "correta": false
+                },
+                {
+                    "id": "formatar",
+                    "nome": "Formatação Segura",
+                    "correta": false
+                },
+                {
+                    "id": "monitorizar_processos",
+                    "nome": "Monitorizar Processos",
+                    "correta": false
+                }
+            ],
+            "tempo": 20
+        },
+        {
+            "id": "roubo_identidade",
+            "titulo": "Roubo de Identidade",
+            "cenario": "Alguém criou contas online usando os dados pessoais de um colaborador.",
+            "ferramentas_ataque": [
+                {
+                    "id": "dados_vazados",
+                    "nome": "Dados Vazados Online",
+                    "correta": true
+                },
+                {
+                    "id": "engenharia_social",
+                    "nome": "Engenharia Social",
+                    "correta": false
+                },
+                {
+                    "id": "phishing",
+                    "nome": "Phishing Direcionado",
+                    "correta": false
+                },
+                {
+                    "id": "criacao_contas",
+                    "nome": "Criação de Contas Falsas",
+                    "correta": false
+                },
+                {
+                    "id": "roubo_docs",
+                    "nome": "Roubo de Documentos",
+                    "correta": false
+                }
+            ],
+            "ferramentas_defesa": [
+                {
+                    "id": "2fa",
+                    "nome": "Ativar Autenticação 2FA",
+                    "correta": true
+                },
+                {
+                    "id": "monitorizar_contas",
+                    "nome": "Monitorizar Contas",
+                    "correta": false
+                },
+                {
+                    "id": "alertar_servicos",
+                    "nome": "Alertar Serviços Afetados",
+                    "correta": false
+                },
+                {
+                    "id": "passwords_fortes",
+                    "nome": "Usar Passwords Fortes",
+                    "correta": false
+                },
+                {
+                    "id": "verificar_vazamentos",
+                    "nome": "Verificar Vazamentos Online",
+                    "correta": false
+                }
+            ],
+            "tempo": 25
+        },
+        {
+            "id": "fake_news",
+            "titulo": "Fake News",
+            "cenario": "Um boato viral espalha-se nas redes sociais e causa pânico entre os funcionários.",
+            "ferramentas_ataque": [
+                {
+                    "id": "manipulacao",
+                    "nome": "Manipulação de Informação",
+                    "correta": true
+                },
+                {
+                    "id": "clickbait",
+                    "nome": "Títulos Sensacionalistas",
+                    "correta": false
+                },
+                {
+                    "id": "bots",
+                    "nome": "Bots para Amplificação",
+                    "correta": false
+                },
+                {
+                    "id": "imagens_falsas",
+                    "nome": "Imagens Manipuladas",
+                    "correta": false
+                },
+                {
+                    "id": "rumores",
+                    "nome": "Espalhar Rumores",
+                    "correta": false
+                }
+            ],
+            "ferramentas_defesa": [
+                {
+                    "id": "fact_check",
+                    "nome": "Verificação de Factos",
+                    "correta": true
+                },
+                {
+                    "id": "fontes_confiaveis",
+                    "nome": "Consultar Fontes Confiáveis",
+                    "correta": false
+                },
+                {
+                    "id": "educacao_midias",
+                    "nome": "Educação sobre Mídias",
+                    "correta": false
+                },
+                {
+                    "id": "reportar",
+                    "nome": "Reportar Conteúdo Falso",
+                    "correta": false
+                },
+                {
+                    "id": "avaliar_contexto",
+                    "nome": "Avaliar Contexto da Informação",
+                    "correta": false
+                }
+            ],
+            "tempo": 15
+        }
+    ]
+}
