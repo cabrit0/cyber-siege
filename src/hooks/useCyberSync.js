@@ -1,8 +1,17 @@
+/**
+ * useCyberSync - Hook de Sincronização Multiplayer
+ * 
+ * VERSÃO ATUALIZADA: Usa Socket.IO para comunicação em tempo real
+ * entre dispositivos diferentes (atacante e defensor).
+ * 
+ * Substitui a versão anterior baseada em localStorage que só
+ * funcionava no mesmo computador.
+ */
+
 import { useState, useEffect, useCallback, useRef } from 'react';
+import socket, { connectSocket, disconnectSocket, isConnected } from './socketClient';
 
-const STORAGE_KEY = 'cyber_siege_state';
-
-// Estados do jogo
+// Estados do jogo (mantidos iguais para compatibilidade)
 export const GameStatus = {
     LOBBY: 'LOBBY',           // Jogadores a selecionar
     READY: 'READY',           // Ambos prontos, a aguardar ataque
@@ -13,7 +22,7 @@ export const GameStatus = {
 
 // Estado inicial limpo
 const createInitialState = () => ({
-    sessionId: Date.now().toString(),
+    sessionId: null,
     activeThemeId: null,
     activeTheme: null,
     gameStatus: GameStatus.LOBBY,
@@ -27,249 +36,305 @@ const createInitialState = () => ({
     responseTime: null,
     streak: 0,
     totalRounds: 0,
-    history: []
+    history: [],
+    players: {
+        attacker: false,
+        defender: false
+    },
+    connected: false,
+    role: null
 });
 
-// Ler estado do localStorage
-const getStoredState = () => {
-    try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            const parsed = JSON.parse(stored);
-            // Merge com estado inicial para garantir que todos os campos existem
-            return {
-                ...createInitialState(),
-                ...parsed,
-                // Garantir que history é sempre um array
-                history: Array.isArray(parsed.history) ? parsed.history : []
-            };
-        }
-    } catch (error) {
-        console.error('Erro ao ler estado:', error);
-    }
-    return createInitialState();
-};
+export function useCyberSync(role = null) {
+    const [gameState, setGameState] = useState(createInitialState);
+    const [connectionStatus, setConnectionStatus] = useState('disconnected');
+    const roleRef = useRef(role);
 
-// Guardar estado no localStorage
-const saveState = (state) => {
-    try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    } catch (error) {
-        console.error('Erro ao guardar estado:', error);
-    }
-};
-
-export function useCyberSync() {
-    const [gameState, setGameState] = useState(() => {
-        const stored = getStoredState();
-        // Se estado antigo (mais de 5 min), limpa
-        if (stored.gameStatus !== GameStatus.LOBBY &&
-            stored.startTime &&
-            Date.now() - stored.startTime > 5 * 60 * 1000) {
-            const fresh = createInitialState();
-            saveState(fresh);
-            return fresh;
-        }
-        return stored;
-    });
-
-    const lastSyncRef = useRef(gameState);
-
-    // Sincronizar com outras janelas via storage event
+    // Atualizar ref quando role muda
     useEffect(() => {
-        const handleStorageChange = (event) => {
-            if (event.key === STORAGE_KEY && event.newValue) {
-                try {
-                    const newState = JSON.parse(event.newValue);
-                    setGameState(newState);
-                    lastSyncRef.current = newState;
-                } catch (error) {
-                    console.error('Erro ao sincronizar:', error);
-                }
-            }
+        roleRef.current = role;
+    }, [role]);
+
+    // ===== GESTÃO DE CONEXÃO =====
+
+    useEffect(() => {
+        // Conectar ao servidor
+        connectSocket();
+
+        // Handler para estado do jogo
+        const handleGameState = (state) => {
+            console.log('📥 Estado recebido:', state);
+            setGameState(prev => ({
+                ...prev,
+                ...state,
+                gameStatus: state.gameStatus || state.status,
+                connected: true
+            }));
         };
 
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
-    }, []);
+        // Handler para conexão estabelecida
+        const handleConnect = () => {
+            console.log('✅ Conectado ao servidor');
+            setConnectionStatus('connected');
+            setGameState(prev => ({ ...prev, connected: true }));
+        };
 
-    // Polling para sincronização (cada 300ms)
-    useEffect(() => {
-        const pollInterval = setInterval(() => {
-            const stored = getStoredState();
+        // Handler para desconexão
+        const handleDisconnect = () => {
+            console.log('❌ Desconectado do servidor');
+            setConnectionStatus('disconnected');
+            setGameState(prev => ({ ...prev, connected: false }));
+        };
 
-            if (stored.gameStatus !== lastSyncRef.current.gameStatus ||
-                stored.attackerTool !== lastSyncRef.current.attackerTool ||
-                stored.roundNumber !== lastSyncRef.current.roundNumber) {
-                setGameState(stored);
-                lastSyncRef.current = stored;
-            }
-        }, 300);
+        // Handler para erro de conexão
+        const handleConnectError = (error) => {
+            console.error('❌ Erro de conexão:', error.message);
+            setConnectionStatus('error');
+        };
 
-        return () => clearInterval(pollInterval);
-    }, []);
+        // Handler para jogador que entrou
+        const handlePlayerJoined = ({ role: joinedRole, socketId }) => {
+            console.log(`👤 ${joinedRole} entrou:`, socketId);
+        };
 
-    // === AÇÕES DO JOGO ===
+        // Handler para jogador que saiu
+        const handlePlayerDisconnected = ({ role: leftRole }) => {
+            console.log(`👤 ${leftRole} saiu`);
+        };
 
-    // Entrar no jogo
-    const startGame = useCallback((theme) => {
-        const current = getStoredState();
+        // Handler para ataque executado
+        const handleAttackExecuted = ({ toolId, roundNumber, startTime }) => {
+            console.log(`⚔️ Ataque recebido: ${toolId}`);
+            setGameState(prev => ({
+                ...prev,
+                attackerTool: toolId,
+                roundNumber,
+                startTime,
+                gameStatus: GameStatus.ATTACKING
+            }));
+        };
 
-        // Verificar se há um jogo ATIVO com o mesmo tema
-        const isSameTheme = current.activeThemeId === theme.id;
-        const isGameActive = current.gameStatus === GameStatus.READY ||
-            current.gameStatus === GameStatus.ATTACKING;
-        const isGameRecent = current.startTime &&
-            (Date.now() - current.startTime) < 2 * 60 * 1000; // 2 minutos
+        // Handler para resultado da ronda
+        const handleRoundResult = (result) => {
+            console.log('🏆 Resultado:', result);
+        };
 
-        // Se há um jogo ativo e recente com o mesmo tema, sincroniza
-        if (isSameTheme && isGameActive && (isGameRecent || current.gameStatus === GameStatus.READY)) {
-            console.log('Joining existing game:', current.gameStatus);
-            setGameState(current);
-            lastSyncRef.current = current;
-            return;
+        // Handler para jogo reiniciado
+        const handleGameReset = () => {
+            console.log('🔄 Jogo reiniciado');
+        };
+
+        // Handler para próxima ronda
+        const handleNextRound = () => {
+            console.log('➡️ Próxima ronda');
+        };
+
+        // Registar listeners
+        socket.on('connect', handleConnect);
+        socket.on('disconnect', handleDisconnect);
+        socket.on('connect_error', handleConnectError);
+        socket.on('game_state', handleGameState);
+        socket.on('player_joined', handlePlayerJoined);
+        socket.on('player_disconnected', handlePlayerDisconnected);
+        socket.on('attack_executed', handleAttackExecuted);
+        socket.on('round_result', handleRoundResult);
+        socket.on('game_reset', handleGameReset);
+        socket.on('next_round_ready', handleNextRound);
+
+        // Verificar estado inicial
+        if (isConnected()) {
+            setConnectionStatus('connected');
+            setGameState(prev => ({ ...prev, connected: true }));
         }
 
-        // Caso contrário, inicia novo jogo limpo
-        console.log('Starting new game');
-        const newState = {
-            ...createInitialState(),
+        // Cleanup
+        return () => {
+            socket.off('connect', handleConnect);
+            socket.off('disconnect', handleDisconnect);
+            socket.off('connect_error', handleConnectError);
+            socket.off('game_state', handleGameState);
+            socket.off('player_joined', handlePlayerJoined);
+            socket.off('player_disconnected', handlePlayerDisconnected);
+            socket.off('attack_executed', handleAttackExecuted);
+            socket.off('round_result', handleRoundResult);
+            socket.off('game_reset', handleGameReset);
+            socket.off('next_round_ready', handleNextRound);
+        };
+    }, []);
+
+    // ===== AÇÕES DO JOGO =====
+
+    /**
+     * Entrar numa sessão de jogo
+     * @param {Object} theme - Tema do jogo
+     * @param {string} playerRole - 'attacker' ou 'defender'
+     * @param {string} sessionId - ID da sessão (opcional, gera um novo se não fornecido)
+     */
+    const joinGame = useCallback((theme, playerRole, sessionId = null) => {
+        const sid = sessionId || `game_${Date.now()}`;
+
+        console.log(`🎮 A entrar como ${playerRole} na sessão ${sid}`);
+
+        socket.emit('join_game', {
+            sessionId: sid,
+            role: playerRole,
+            theme
+        });
+
+        setGameState(prev => ({
+            ...prev,
+            sessionId: sid,
+            role: playerRole,
+            activeThemeId: theme?.id,
+            activeTheme: theme
+        }));
+
+        return sid;
+    }, []);
+
+    /**
+     * Iniciar jogo com tema (mantido para compatibilidade)
+     * @param {Object} theme - Tema do jogo
+     */
+    const startGame = useCallback((theme) => {
+        const currentRole = roleRef.current;
+        if (currentRole) {
+            return joinGame(theme, currentRole);
+        }
+
+        // Fallback: apenas emitir start_game
+        socket.emit('start_game', { theme });
+
+        setGameState(prev => ({
+            ...prev,
             activeThemeId: theme.id,
             activeTheme: theme,
             gameStatus: GameStatus.READY
-        };
+        }));
+    }, [joinGame]);
 
-        saveState(newState);
-        setGameState(newState);
-        lastSyncRef.current = newState;
-    }, []);
-
-    // Atacante executa ataque
+    /**
+     * Atacante executa ataque
+     * @param {string} toolId - ID da ferramenta de ataque
+     */
     const executeAttack = useCallback((toolId) => {
-        const current = getStoredState();
-        const newState = {
-            ...current,
+        console.log(`⚔️ Executar ataque: ${toolId}`);
+
+        socket.emit('execute_attack', { toolId });
+
+        // Atualização otimista local
+        setGameState(prev => ({
+            ...prev,
             attackerTool: toolId,
             defenderTool: null,
             startTime: Date.now(),
             gameStatus: GameStatus.ATTACKING,
-            roundNumber: current.roundNumber + 1
-        };
-        saveState(newState);
-        setGameState(newState);
-        lastSyncRef.current = newState;
+            roundNumber: prev.roundNumber + 1
+        }));
     }, []);
 
-    // Calcular pontuação
-    const calculateScore = (timeRemaining, maxTime, correct, streak) => {
-        if (!correct) return 0;
-        const base = 100;
-        const timeBonus = Math.round((timeRemaining / maxTime) * 200);
-        const streakBonus = streak * 50;
-        return base + timeBonus + streakBonus;
-    };
-
-    // Defensor executa defesa
+    /**
+     * Defensor executa defesa
+     * @param {string} toolId - ID da ferramenta de defesa
+     * @param {boolean} isCorrect - Se a defesa está correta
+     * @param {number} timeRemaining - Tempo restante em segundos
+     */
     const executeDefense = useCallback((toolId, isCorrect, timeRemaining = 0) => {
-        const current = getStoredState();
-        const maxTime = current.activeTheme?.tempo || 30;
-        const score = calculateScore(timeRemaining, maxTime, isCorrect, current.streak);
+        console.log(`🛡️ Executar defesa: ${toolId} (Correto: ${isCorrect})`);
 
-        const roundResult = {
-            round: current.roundNumber,
-            themeId: current.activeThemeId,
-            themeName: current.activeTheme?.titulo,
-            attackerTool: current.attackerTool,
-            defenderTool: toolId,
+        socket.emit('execute_defense', {
+            toolId,
             isCorrect,
-            responseTime: current.startTime ? (Date.now() - current.startTime) / 1000 : 0,
-            scoreGained: score,
-            winner: isCorrect ? 'defender' : 'attacker'
-        };
+            timeRemaining
+        });
 
-        const newState = {
-            ...current,
+        // Atualização otimista local
+        setGameState(prev => ({
+            ...prev,
             defenderTool: toolId,
             endTime: Date.now(),
-            responseTime: roundResult.responseTime,
-            gameStatus: isCorrect ? GameStatus.DEFENDED : GameStatus.BREACHED,
-            defenderScore: current.defenderScore + score,
-            attackerScore: isCorrect ? current.attackerScore : current.attackerScore + 150,
-            streak: isCorrect ? current.streak + 1 : 0,
-            totalRounds: current.totalRounds + 1,
-            history: [...current.history, roundResult]
-        };
-
-        saveState(newState);
-        setGameState(newState);
-        lastSyncRef.current = newState;
+            gameStatus: isCorrect ? GameStatus.DEFENDED : GameStatus.BREACHED
+        }));
     }, []);
 
-    // Tempo esgotado
+    /**
+     * Tempo esgotado
+     */
     const timeExpired = useCallback(() => {
-        const current = getStoredState();
+        console.log('⏱️ Tempo esgotado');
 
-        const roundResult = {
-            round: current.roundNumber,
-            themeId: current.activeThemeId,
-            themeName: current.activeTheme?.titulo,
-            attackerTool: current.attackerTool,
-            defenderTool: null,
-            isCorrect: false,
-            responseTime: current.activeTheme?.tempo || 0,
-            scoreGained: 0,
-            winner: 'attacker',
-            timedOut: true
-        };
+        socket.emit('time_expired');
 
-        const newState = {
-            ...current,
+        setGameState(prev => ({
+            ...prev,
             endTime: Date.now(),
-            gameStatus: GameStatus.BREACHED,
-            attackerScore: current.attackerScore + 200,
-            streak: 0,
-            totalRounds: current.totalRounds + 1,
-            history: [...current.history, roundResult]
-        };
-
-        saveState(newState);
-        setGameState(newState);
-        lastSyncRef.current = newState;
+            gameStatus: GameStatus.BREACHED
+        }));
     }, []);
 
-    // Reiniciar jogo
+    /**
+     * Reiniciar jogo
+     */
     const resetGame = useCallback(() => {
-        const freshState = createInitialState();
-        saveState(freshState);
-        setGameState(freshState);
-        lastSyncRef.current = freshState;
+        console.log('🔄 Reiniciar jogo');
+
+        socket.emit('reset_game');
+
+        setGameState(createInitialState());
     }, []);
 
-    // Nova ronda
+    /**
+     * Nova ronda
+     */
     const nextRound = useCallback(() => {
-        const current = getStoredState();
-        const newState = {
-            ...current,
+        console.log('➡️ Próxima ronda');
+
+        socket.emit('next_round');
+
+        setGameState(prev => ({
+            ...prev,
             gameStatus: GameStatus.READY,
             attackerTool: null,
             defenderTool: null,
             startTime: null,
             endTime: null,
             responseTime: null
-        };
-        saveState(newState);
-        setGameState(newState);
-        lastSyncRef.current = newState;
+        }));
+    }, []);
+
+    /**
+     * Solicitar estado atual do servidor
+     */
+    const requestState = useCallback(() => {
+        socket.emit('request_state');
+    }, []);
+
+    /**
+     * Desconectar do servidor
+     */
+    const disconnect = useCallback(() => {
+        disconnectSocket();
+        setGameState(createInitialState());
     }, []);
 
     return {
+        // Estado
         gameState,
+        connectionStatus,
+        isConnected: gameState.connected,
+
+        // Ações
+        joinGame,
         startGame,
         executeAttack,
         executeDefense,
         timeExpired,
         resetGame,
         nextRound,
+        requestState,
+        disconnect,
+
+        // Constantes
         GameStatus
     };
 }
