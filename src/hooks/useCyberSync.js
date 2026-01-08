@@ -129,6 +129,11 @@ export function useCyberSync(role = null) {
             console.log('➡️ Próxima ronda');
         };
 
+        // Handler para replay (jogar novamente com scores)
+        const handleGameReplay = () => {
+            console.log('🔄 Jogo reiniciado (scores mantidos)');
+        };
+
         // Registar listeners
         socket.on('connect', handleConnect);
         socket.on('disconnect', handleDisconnect);
@@ -139,6 +144,7 @@ export function useCyberSync(role = null) {
         socket.on('attack_executed', handleAttackExecuted);
         socket.on('round_result', handleRoundResult);
         socket.on('game_reset', handleGameReset);
+        socket.on('game_replay', handleGameReplay);
         socket.on('next_round_ready', handleNextRound);
 
         // Verificar estado inicial
@@ -158,6 +164,7 @@ export function useCyberSync(role = null) {
             socket.off('attack_executed', handleAttackExecuted);
             socket.off('round_result', handleRoundResult);
             socket.off('game_reset', handleGameReset);
+            socket.off('game_replay', handleGameReplay);
             socket.off('next_round_ready', handleNextRound);
         };
     }, []);
@@ -303,6 +310,28 @@ export function useCyberSync(role = null) {
     }, []);
 
     /**
+     * Jogar novamente mantendo pontuações
+     */
+    const replayGame = useCallback(() => {
+        console.log('🔄 Replay jogo (manter scores)');
+
+        socket.emit('replay_game');
+
+        setGameState(prev => ({
+            ...prev,
+            gameStatus: GameStatus.READY,
+            attackerTool: null,
+            defenderTool: null,
+            startTime: null,
+            endTime: null,
+            responseTime: null,
+            roundNumber: 0,
+            streak: 0
+            // Manter: attackerScore, defenderScore, totalRounds, history
+        }));
+    }, []);
+
+    /**
      * Solicitar estado atual do servidor
      */
     const requestState = useCallback(() => {
@@ -330,6 +359,7 @@ export function useCyberSync(role = null) {
         executeDefense,
         timeExpired,
         resetGame,
+        replayGame,
         nextRound,
         requestState,
         disconnect,

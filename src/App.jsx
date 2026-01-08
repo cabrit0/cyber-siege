@@ -13,11 +13,12 @@ function App() {
 
   const {
     gameState,
-    joinGame,
+    startGame,
     executeAttack,
     executeDefense,
     timeExpired,
     resetGame,
+    replayGame,
     nextRound
   } = useCyberSync();
 
@@ -26,14 +27,10 @@ function App() {
     (gameState.activeThemeId ? cenarios.temas.find(t => t.id === gameState.activeThemeId) : null);
 
   // Iniciar jogo
-  // ID de sessão comum para todos os jogadores
-  const SESSION_ID = 'cyber_siege_default';
-
   const handleStart = (selectedRole, theme) => {
     setRole(selectedRole);
     setLocalTheme(theme);
-    // Usar joinGame com sessionId comum para ambos entrarem na mesma sala
-    joinGame(theme, selectedRole, SESSION_ID);
+    startGame(theme);
     setShowFeedback(false);
   };
 
@@ -54,11 +51,10 @@ function App() {
     setShowFeedback(true);
   };
 
-  // Jogar novamente
+  // Jogar novamente (manter scores)
   const handlePlayAgain = () => {
-    resetGame();
-    setRole(null);
-    setLocalTheme(null);
+    replayGame();
+    // Manter role e theme, apenas resetar feedback
     setShowFeedback(false);
   };
 
