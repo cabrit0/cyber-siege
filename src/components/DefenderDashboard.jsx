@@ -20,7 +20,8 @@ function DefenderDashboard({ theme, onDefend, gameState, onTimeExpired }) {
 
     // Estados do jogo
     const isWaiting = gameState.gameStatus === GameStatus.READY || gameState.gameStatus === GameStatus.LOBBY;
-    const isUnderAttack = gameState.gameStatus === GameStatus.ATTACKING;
+    // O ataque só é visível para o defensor quando o atacante já escolheu a ferramenta
+    const isUnderAttack = gameState.gameStatus === GameStatus.ATTACKING && gameState.attackerTool;
     const isGameOver = gameState.gameStatus === GameStatus.DEFENDED || gameState.gameStatus === GameStatus.BREACHED;
 
 

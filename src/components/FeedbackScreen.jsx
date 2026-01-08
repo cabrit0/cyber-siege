@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-function FeedbackScreen({ theme, gameState, role, onPlayAgain }) {
+function FeedbackScreen({ theme, gameState, role, onPlayAgain, onNextRound, onChooseRole, currentUserId }) {
     const [showContent, setShowContent] = useState(false);
     const [showStats, setShowStats] = useState(false);
     const [scoreAnimation, setScoreAnimation] = useState(0);
@@ -12,12 +12,6 @@ function FeedbackScreen({ theme, gameState, role, onPlayAgain }) {
                 <div className="text-center">
                     <div className="text-6xl animate-pulse mb-4">📊</div>
                     <p className="text-purple-400 font-mono">A carregar resultados...</p>
-                    <button
-                        onClick={onPlayAgain}
-                        className="mt-6 px-6 py-3 bg-purple-600 text-white font-mono rounded-lg hover:bg-purple-500"
-                    >
-                        Voltar ao Início
-                    </button>
                 </div>
             </div>
         );
@@ -199,15 +193,66 @@ function FeedbackScreen({ theme, gameState, role, onPlayAgain }) {
                 {/* Action Buttons */}
                 {showStats && (
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 animate-[fadeIn_0.5s_ease-out]">
-                        <button
-                            onClick={onPlayAgain}
-                            className="group px-10 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-orbitron font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:scale-105"
-                        >
-                            <span className="flex items-center gap-3">
-                                <span className="text-xl">🔄</span>
-                                JOGAR NOVAMENTE
-                            </span>
-                        </button>
+                        {gameState.themeRoundCount >= 3 ? (
+                            playerWon ? (
+                                <button
+                                    onClick={onNextRound} // Chama next_round que trigger THEME_COMPLETED -> EntryScreen
+                                    className="group px-10 py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-orbitron font-bold rounded-xl hover:from-purple-500 hover:to-pink-500 transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:scale-105"
+                                >
+                                    <span className="flex items-center gap-3">
+                                        <span className="text-xl">✨</span>
+                                        IR PARA SELEÇÃO DE TEMA
+                                    </span>
+                                </button>
+                            ) : (
+                                <div className="px-8 py-4 bg-slate-900/50 border border-slate-700 rounded-xl flex items-center gap-4 animate-pulse">
+                                    <div className="w-5 h-5 border-2 border-slate-500 border-t-white rounded-full animate-spin" />
+                                    <span className="text-slate-400 font-mono text-sm">
+                                        À espera que o vencedor avance para a seleção de tema...
+                                    </span>
+                                </div>
+                            )
+                        ) : (
+                            // Se não acabou o tema, lógica de escolha de papel (Role Swap)
+                            <div className="w-full flex flex-col items-center">
+                                {playerWon ? (
+                                    <div className="animate-[fadeIn_0.5s_ease-out]">
+                                        <p className="text-center text-slate-300 font-mono mb-4 text-sm uppercase tracking-widest">
+                                            Venceste! Escolhe o teu papel na próxima ronda:
+                                        </p>
+                                        <div className="flex flex-col sm:flex-row gap-4">
+                                            <button
+                                                onClick={() => onChooseRole('attacker')}
+                                                className="px-8 py-3 bg-emerald-500/20 border border-emerald-500 text-emerald-400 font-orbitron font-bold rounded-xl hover:bg-emerald-500 hover:text-white transition-all duration-300"
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    ⚔️ SER ATACANTE
+                                                </span>
+                                            </button>
+                                            <button
+                                                onClick={() => onChooseRole('defender')}
+                                                className="px-8 py-3 bg-sky-500/20 border border-sky-500 text-sky-400 font-orbitron font-bold rounded-xl hover:bg-sky-500 hover:text-white transition-all duration-300"
+                                            >
+                                                <span className="flex items-center gap-2">
+                                                    🛡️ SER DEFENSOR
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="px-8 py-4 bg-slate-900/50 border border-slate-700 rounded-xl flex items-center gap-4 animate-pulse">
+                                        <div className="w-5 h-5 border-2 border-slate-500 border-t-white rounded-full animate-spin" />
+                                        <span className="text-slate-400 font-mono text-sm">
+                                            À espera que o vencedor escolha os papéis...
+                                        </span>
+                                    </div>
+                                )}
+
+                                <p className="mt-4 text-slate-600 font-mono text-xs">
+                                    Ronda {gameState.themeRoundCount || 1} de 3
+                                </p>
+                            </div>
+                        )}
 
                         {/* Match History Summary */}
                         {gameState.totalRounds > 1 && (
@@ -224,15 +269,15 @@ function FeedbackScreen({ theme, gameState, role, onPlayAgain }) {
             </div>
 
             <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes particle-rise {
-          0% { transform: translateY(0) scale(1); opacity: 1; }
-          100% { transform: translateY(-100vh) scale(0); opacity: 0; }
-        }
-      `}</style>
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes particle-rise {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-100vh) scale(0); opacity: 0; }
+}
+`}</style>
         </div>
     );
 }

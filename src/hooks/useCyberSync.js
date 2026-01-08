@@ -11,13 +11,34 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import socket, { connectSocket, disconnectSocket, isConnected } from './socketClient';
 
+// Helper para gerar UUID simples
+const generateUUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+};
+
+// Recuperar ou criar ID persistente do utilizador
+const getPersistentUserId = () => {
+    let id = localStorage.getItem('cyber_siege_userId');
+    if (!id) {
+        id = generateUUID();
+        localStorage.setItem('cyber_siege_userId', id);
+    }
+    return id;
+};
+const PERMANENT_USER_ID = getPersistentUserId(); // Constante por sessão do browser
+
 // Estados do jogo (mantidos iguais para compatibilidade)
 export const GameStatus = {
     LOBBY: 'LOBBY',           // Jogadores a selecionar
     READY: 'READY',           // Ambos prontos, a aguardar ataque
     ATTACKING: 'ATTACKING',   // Ataque em curso
     DEFENDED: 'DEFENDED',     // Defensor ganhou
-    BREACHED: 'BREACHED'      // Atacante ganhou
+    BREACHED: 'BREACHED',      // Atacante ganhou
+    THEME_COMPLETED: 'THEME_COMPLETED', // Tema completo
+    GAME_FINISHED: 'GAME_FINISHED' // Jogo terminado
 };
 
 // Estado inicial limpo
@@ -36,6 +57,8 @@ const createInitialState = () => ({
     responseTime: null,
     streak: 0,
     totalRounds: 0,
+    playedThemes: [],
+    themeRoundCount: 0,
     history: [],
     players: {
         attacker: false,
@@ -54,6 +77,12 @@ export function useCyberSync(role = null) {
     useEffect(() => {
         roleRef.current = role;
     }, [role]);
+
+    // Ref para acesso ao estado atual dentro dos event listeners
+    const gameStateRef = useRef(gameState);
+    useEffect(() => {
+        gameStateRef.current = gameState;
+    }, [gameState]);
 
     // ===== GESTÃO DE CONEXÃO =====
 
@@ -77,6 +106,17 @@ export function useCyberSync(role = null) {
             console.log('✅ Conectado ao servidor');
             setConnectionStatus('connected');
             setGameState(prev => ({ ...prev, connected: true }));
+
+            // Tentar recuperar sessão após reconexão (Auto-Rejoin)
+            const currentState = gameStateRef.current;
+            if (currentState.sessionId && currentState.role) {
+                console.log(`🔄 A recuperar sessão ${currentState.sessionId} como ${currentState.role}...`);
+                socket.emit('join_game', {
+                    sessionId: currentState.sessionId,
+                    role: currentState.role,
+                    theme: currentState.activeTheme
+                });
+            }
         };
 
         // Handler para desconexão
@@ -90,6 +130,28 @@ export function useCyberSync(role = null) {
         const handleConnectError = (error) => {
             console.error('❌ Erro de conexão:', error.message);
             setConnectionStatus('error');
+        };
+
+        // Handler para erros do servidor (lógica de jogo)
+        const handleSocketError = (error) => {
+            console.error('❌ Erro do servidor:', error);
+            const msg = error?.message || 'Erro desconhecido';
+
+            setGameState(prev => {
+                // Se erro ocorrer durante o join (temos sessao mas nao estamos confirmados/connected ou role mismatch), resetar
+                // Simplificação: Sempre guardar erro no estado para UI mostrar
+                // Se erro for "Sala cheia" ou "Sala não encontrada", resetar sessionId para permitir tentar de novo
+
+                const criticalErrors = ['Sala cheia', 'A aguardar pelo anfitrião', 'ID da sessão é obrigatório'];
+                const shouldReset = criticalErrors.some(e => msg.includes(e));
+
+                return {
+                    ...prev,
+                    error: msg,
+                    sessionId: shouldReset ? null : prev.sessionId,
+                    role: shouldReset ? null : prev.role
+                };
+            });
         };
 
         // Handler para jogador que entrou
@@ -138,6 +200,7 @@ export function useCyberSync(role = null) {
         socket.on('connect', handleConnect);
         socket.on('disconnect', handleDisconnect);
         socket.on('connect_error', handleConnectError);
+        socket.on('error', handleSocketError); // Novo listener para erros de lógica
         socket.on('game_state', handleGameState);
         socket.on('player_joined', handlePlayerJoined);
         socket.on('player_disconnected', handlePlayerDisconnected);
@@ -158,6 +221,7 @@ export function useCyberSync(role = null) {
             socket.off('connect', handleConnect);
             socket.off('disconnect', handleDisconnect);
             socket.off('connect_error', handleConnectError);
+            socket.off('error', handleSocketError);
             socket.off('game_state', handleGameState);
             socket.off('player_joined', handlePlayerJoined);
             socket.off('player_disconnected', handlePlayerDisconnected);
@@ -172,53 +236,72 @@ export function useCyberSync(role = null) {
     // ===== AÇÕES DO JOGO =====
 
     /**
-     * Entrar numa sessão de jogo
-     * @param {Object} theme - Tema do jogo
-     * @param {string} playerRole - 'attacker' ou 'defender'
-     * @param {string} sessionId - ID da sessão (opcional, gera um novo se não fornecido)
+     * Entrar na sessão de jogo
+     * @param {Object} theme - Tema selecionado
+     * @param {string} userRole - 'attacker' ou 'defender'
+     * @param {string} [customSessionId] - ID da sala opcional
      */
-    const joinGame = useCallback((theme, playerRole, sessionId = null) => {
-        const sid = sessionId || `game_${Date.now()}`;
-
-        console.log(`🎮 A entrar como ${playerRole} na sessão ${sid}`);
-
-        socket.emit('join_game', {
-            sessionId: sid,
-            role: playerRole,
-            theme
-        });
-
-        setGameState(prev => ({
-            ...prev,
-            sessionId: sid,
-            role: playerRole,
-            activeThemeId: theme?.id,
-            activeTheme: theme
-        }));
-
-        return sid;
-    }, []);
-
-    /**
-     * Iniciar jogo com tema (mantido para compatibilidade)
-     * @param {Object} theme - Tema do jogo
-     */
-    const startGame = useCallback((theme) => {
-        const currentRole = roleRef.current;
-        if (currentRole) {
-            return joinGame(theme, currentRole);
+    const joinGame = useCallback((theme, userRole, customSessionId = null) => {
+        if (!socket.connected) {
+            console.warn('⚠️ Socket desconectado. A tentar reconectar...');
+            socket.connect();
         }
 
-        // Fallback: apenas emitir start_game
-        socket.emit('start_game', { theme });
+        // Usar ID passado, ou o atual do estado, ou gerar novo
+        const finalSessionId = customSessionId || gameState.sessionId || `game_${Date.now()}`;
 
+        console.log(`🎮 A entrar como ${userRole} na sessão ${finalSessionId}`);
+
+        // Atualizar estado local imediatamente
+        setGameState(prev => ({
+            ...prev,
+            sessionId: finalSessionId,
+            role: userRole,
+            activeTheme: theme,
+            activeThemeId: theme?.id || null, // Safety check for Auto-Join (theme is null initially)
+            playedThemes: prev.playedThemes, // Manter histórico
+            themeRoundCount: prev.themeRoundCount // Manter contagem
+        }));
+
+        socket.emit('join_game', {
+            sessionId: finalSessionId,
+            role: userRole,
+            theme: theme,
+            userId: PERMANENT_USER_ID
+        });
+    }, [gameState.sessionId]);
+
+    /**
+     * Iniciar jogo com tema
+     * @param {Object} theme - Tema do jogo
+     * @param {string} [roleOverride] - Papel opcional
+     * @param {string} [sessionId] - ID da sala opcional
+     */
+    const startGame = useCallback((theme, roleOverride = null, sessionId = null) => {
+        const currentRole = roleOverride || roleRef.current;
+
+        // Atualizar estado local para refletir a intenção imediatamente
         setGameState(prev => ({
             ...prev,
             activeThemeId: theme.id,
             activeTheme: theme,
-            gameStatus: GameStatus.READY
+            gameStatus: GameStatus.READY,
+            role: currentRole || prev.role,
+            sessionId: sessionId || prev.sessionId
         }));
-    }, [joinGame]);
+
+        console.log(`🎮 A iniciar jogo com tema ${theme.id} e papel ${currentRole}`);
+
+        // Emitir evento de início com tema, papel e ID da sessão
+        // Isto garante que a sessão é criada/recuperada no servidor se necessário
+        const finalSessionId = sessionId || prev.sessionId;
+        socket.emit('start_game', {
+            theme,
+            role: currentRole,
+            sessionId: finalSessionId,
+            userId: PERMANENT_USER_ID
+        });
+    }, []);
 
     /**
      * Atacante executa ataque
@@ -332,6 +415,15 @@ export function useCyberSync(role = null) {
     }, []);
 
     /**
+     * Escolher próximo papel (apenas vencedor)
+     * @param {string} role - 'attacker' ou 'defender'
+     */
+    const chooseNextRole = useCallback((role) => {
+        console.log(`🔀 Escolher próximo papel: ${role}`);
+        socket.emit('choose_next_role', { role, userId: PERMANENT_USER_ID });
+    }, []);
+
+    /**
      * Solicitar estado atual do servidor
      */
     const requestState = useCallback(() => {
@@ -361,8 +453,11 @@ export function useCyberSync(role = null) {
         resetGame,
         replayGame,
         nextRound,
+        chooseNextRole,
         requestState,
         disconnect,
+        mySocketId: socket?.id,
+        myUserId: PERMANENT_USER_ID,
 
         // Constantes
         GameStatus

@@ -18,8 +18,10 @@ function AttackerDashboard({ theme, onAttack, gameState }) {
     const [showLaunchAnimation, setShowLaunchAnimation] = useState(false);
 
     // Estados - canAttack = pronto para atacar, isWaiting = a aguardar resposta
-    const canAttack = gameState.gameStatus === GameStatus.READY;
-    const isWaitingResponse = gameState.gameStatus === GameStatus.ATTACKING;
+    // No início da ronda, status é ATTACKING mas attackerTool é null -> Jogador DEVE atacar
+    // Se status é ATTACKING e attackerTool existe -> Jogador JÁ atacou e espera defesa
+    const canAttack = (gameState.gameStatus === GameStatus.ATTACKING || gameState.gameStatus === GameStatus.READY) && !gameState.attackerTool;
+    const isWaitingResponse = gameState.gameStatus === GameStatus.ATTACKING && gameState.attackerTool;
     const isGameOver = gameState.gameStatus === GameStatus.DEFENDED || gameState.gameStatus === GameStatus.BREACHED;
 
     // Animação de lançamento
