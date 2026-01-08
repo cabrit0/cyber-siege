@@ -13,7 +13,7 @@ function App() {
 
   const {
     gameState,
-    startGame,
+    joinGame,
     executeAttack,
     executeDefense,
     timeExpired,
@@ -26,10 +26,14 @@ function App() {
     (gameState.activeThemeId ? cenarios.temas.find(t => t.id === gameState.activeThemeId) : null);
 
   // Iniciar jogo
+  // ID de sessão comum para todos os jogadores
+  const SESSION_ID = 'cyber_siege_default';
+
   const handleStart = (selectedRole, theme) => {
     setRole(selectedRole);
     setLocalTheme(theme);
-    startGame(theme);
+    // Usar joinGame com sessionId comum para ambos entrarem na mesma sala
+    joinGame(theme, selectedRole, SESSION_ID);
     setShowFeedback(false);
   };
 
