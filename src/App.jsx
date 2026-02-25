@@ -5,6 +5,7 @@ import EntryScreen from './components/EntryScreen';
 import AttackerDashboard from './components/AttackerDashboard';
 import DefenderDashboard from './components/DefenderDashboard';
 import FeedbackScreen from './components/FeedbackScreen';
+import GameReportScreen from './components/GameReportScreen';
 
 function App() {
   const [role, setRole] = useState(null);
@@ -166,15 +167,11 @@ function App() {
   // 2. Ecrã de Fim de Jogo (Resultados Globais)
   if (gameState.gameStatus === GameStatus.GAME_FINISHED) {
     return (
-      <EntryScreen
-        playedThemes={gameState.playedThemes}
-        currentSessionId={gameState.sessionId}
-        canSelect={true} // Pode ver o ecrã
-        initialRole={role}
-        // Game Over Props
-        globalWinner={gameState.globalWinnerUserId}
-        finalScores={gameState.finalScores}
+      <GameReportScreen
+        gameState={gameState}
         myUserId={myUserId}
+        themesCatalog={cenarios.temas}
+        onRestart={() => window.location.reload()}
       />
     );
   }
