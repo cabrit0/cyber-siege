@@ -122,7 +122,7 @@ function DefenderDashboard({ theme, onDefend, gameState, onTimeExpired }) {
                         <div className="text-center">
                             <p className="text-xs text-slate-500 font-mono">TUA PONTUAÇÃO</p>
                             <p className="text-2xl font-orbitron font-bold text-sky-400 score-display">
-                                {gameState.defenderScore}
+                                {gameState.myScore ?? gameState.defenderScore}
                             </p>
                         </div>
                         <div className="w-px h-10 bg-slate-700" />

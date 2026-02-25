@@ -34,7 +34,7 @@ function FeedbackScreen({ theme, gameState, role, onPlayAgain, onNextRound, onCh
 
     // Animação de pontuação
     useEffect(() => {
-        const targetScore = role === 'defender' ? gameState.defenderScore : gameState.attackerScore;
+        const targetScore = gameState.myScore ?? (role === 'defender' ? gameState.defenderScore : gameState.attackerScore);
         const duration = 1500;
         const steps = 60;
         const increment = targetScore / steps;
@@ -51,7 +51,7 @@ function FeedbackScreen({ theme, gameState, role, onPlayAgain, onNextRound, onCh
         }, duration / steps);
 
         return () => clearInterval(timer);
-    }, [role, gameState.defenderScore, gameState.attackerScore]);
+    }, [role, gameState.myScore, gameState.defenderScore, gameState.attackerScore]);
 
     return (
         <div className="min-h-screen bg-slate-950 cyber-grid relative overflow-hidden">

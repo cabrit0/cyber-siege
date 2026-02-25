@@ -88,7 +88,7 @@ function AttackerDashboard({ theme, onAttack, gameState }) {
                         <div className="text-center">
                             <p className="text-xs text-slate-500 font-mono">TUA PONTUAÇÃO</p>
                             <p className="text-2xl font-orbitron font-bold text-emerald-400 score-display">
-                                {gameState.attackerScore}
+                                {gameState.myScore ?? gameState.attackerScore}
                             </p>
                         </div>
                         <div className="w-px h-10 bg-slate-700" />

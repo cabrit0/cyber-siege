@@ -53,6 +53,9 @@ const createInitialState = () => ({
     endTime: null,
     attackerScore: 0,
     defenderScore: 0,
+    scoresByUserId: {},
+    myScore: 0,
+    opponentScore: 0,
     roundNumber: 0,
     responseTime: null,
     streak: 0,
@@ -93,12 +96,31 @@ export function useCyberSync(role = null) {
         // Handler para estado do jogo
         const handleGameState = (state) => {
             console.log('📥 Estado recebido:', state);
-            setGameState(prev => ({
-                ...prev,
-                ...state,
-                gameStatus: state.gameStatus || state.status,
-                connected: true
-            }));
+            setGameState(prev => {
+                const merged = {
+                    ...prev,
+                    ...state,
+                    gameStatus: state.gameStatus || state.status,
+                    connected: true
+                };
+                const scoresByUserId = merged.scoresByUserId || {};
+                const attackerUserId = merged.players?.attacker?.userId || null;
+                const defenderUserId = merged.players?.defender?.userId || null;
+                const myUserId = PERMANENT_USER_ID;
+                const myScore = Number(scoresByUserId[myUserId]) || 0;
+                const opponentUserId =
+                    attackerUserId && attackerUserId !== myUserId
+                        ? attackerUserId
+                        : (defenderUserId && defenderUserId !== myUserId ? defenderUserId : null);
+                const opponentScore = opponentUserId ? (Number(scoresByUserId[opponentUserId]) || 0) : 0;
+
+                return {
+                    ...merged,
+                    scoresByUserId,
+                    myScore,
+                    opponentScore
+                };
+            });
         };
 
         // Handler para conexão estabelecida
@@ -114,7 +136,8 @@ export function useCyberSync(role = null) {
                 socket.emit('join_game', {
                     sessionId: currentState.sessionId,
                     role: currentState.role,
-                    theme: currentState.activeTheme
+                    theme: currentState.activeTheme,
+                    userId: PERMANENT_USER_ID
                 });
             }
         };
@@ -294,7 +317,7 @@ export function useCyberSync(role = null) {
 
         // Emitir evento de início com tema, papel e ID da sessão
         // Isto garante que a sessão é criada/recuperada no servidor se necessário
-        const finalSessionId = sessionId || prev.sessionId;
+        const finalSessionId = sessionId || gameStateRef.current?.sessionId || null;
         socket.emit('start_game', {
             theme,
             role: currentRole,

@@ -136,7 +136,7 @@ function App() {
         onPlayAgain={handleNewTheme} // Fallback local
         onNextRound={nextRound} // Avança para THEME_COMPLETED na R3
         onChooseRole={chooseNextRole}
-        currentUserId={mySocketId}
+        currentUserId={myUserId}
       />
     );
   }
